@@ -2,9 +2,8 @@ name: Train and Upload Model
 
 on:
   push:
-    paths:
-      - "MLProject/**"
-  workflow_dispatch:
+    branches:
+      - "main"
 
 jobs:
   train:
@@ -14,37 +13,28 @@ jobs:
       - name: Run actions/checkout@v3
         uses: actions/checkout@v3
 
-      - name: Set up Python 3.12.7
+      - name: Set up Python 3.10.12
         uses: actions/setup-python@v4
         with:
-          python-version: 3.12.7
+          python-version: 3.10.12
 
-      - name: Check Env
+      - name: Check Environment
         run: |
           python3 --version
           pip --version
 
       - name: Install dependencies
         run: |
+          echo "Install dependencies"
           pip install -r MLProject/requirements.txt
-
-      - name: Set MLflow Tracking URI
-        run: |
-          export MLFLOW_TRACKING_URI="file:./mlruns"
 
       - name: Run mlflow project
         run: |
           cd MLProject
-          mlflow run . --entry-point main
+          mlflow run . --env-manager local --experiment-name Training
 
-      - name: Save artifact to Github
+      - name: Get Latest MLflow Run ID
         run: |
-          mkdir -p ../artifacts
-          cp model.xgb ../artifacts/
-          echo "Artifact saved to artifacts directory"
-
-      - name: Post Set up Python 3.12.7
-        run: echo "Post-setup done"
-
-      - name: Post Run actions/checkout@v3
-        run: echo "Post-checkout done"
+          cd MLProject
+          echo "Latest MLflow run ID"
+          echo $(grep '^MLFLOW_RUN_ID=' .env | cut -d'=' -f2)
