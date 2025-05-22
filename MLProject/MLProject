@@ -1,9 +1,6 @@
-name: kddcup99 XGBoost
-
-conda_env: conda.yaml
-
+name: XGBoost_cls
+python_env: python_env.yaml
 entry_points:
   main:
-    parameters:
-      data_path: {type: str, default: "kddcup99_preprocessing/data.csv"}
-    command: "python modelling.py --data_path {data_path}"
+    command: |
+      python3 modelling_tuning.py
