@@ -1,5 +1,5 @@
 import mlflow
-from mlflow.data import pandas_dataset
+import mlflow.xgboost
 import mlflow.xgboost
 from sklearn.model_selection import train_test_split
 from skopt import BayesSearchCV
@@ -38,7 +38,7 @@ bayes_search = BayesSearchCV(
     estimator=XGBClassifier(),
     search_spaces=param_search,
     n_iter=32,
-    cv=5,
+    cv=3,
     scoring="accuracy",
     random_state=42,
     n_jobs=-1,
@@ -49,7 +49,6 @@ print("Starting Bayesian optimization...")
 bayes_search.fit(X_train, y_train)
 
 # Define the model
-print("Create & Trainig Model")
 # model = XGBClassifier()
 model = XGBClassifier(**bayes_search.best_params_)
 model.fit(X_train, y_train)
@@ -58,15 +57,8 @@ model.fit(X_train, y_train)
 print("Predicting on the test set...")
 y_pred = model.predict(X_test)
 
-input_example = X_test[:10]
-
 # Start MLflow run
 with mlflow.start_run() as run:
-    mlflow.log_input(
-        dataset=pandas_dataset.from_pandas(X_train), context="Training Data"
-    )
-    mlflow.log_input(dataset=y_train, context="Training Target")
-
     env_path = os.path.join(os.path.dirname(__file__), ".env")
     set_key(env_path, "MLFLOW_RUN_ID", run.info.run_id)
 
@@ -93,6 +85,6 @@ with mlflow.start_run() as run:
 
     # Log the model
     print("Logging the model to MLflow...")
-    mlflow.xgboost.log_model(model, "model", input_example=input_example)
+    mlflow.xgboost.log_model(model, "model", input_example=X_test)
 
     mlflow.end_run()
