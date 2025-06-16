@@ -3,4 +3,4 @@ python_env: python_env.yaml
 entry_points:
   main:
     command: |
-      python3 modelling_tuning.py
+      python3 modelling.py
